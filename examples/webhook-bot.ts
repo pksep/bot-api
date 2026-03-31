@@ -10,10 +10,10 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '1:your-token-here';
 const WEBHOOK_PORT = Number(process.env.WEBHOOK_PORT) || 8443;
 const WEBHOOK_URL = process.env.WEBHOOK_URL || `http://localhost:${WEBHOOK_PORT}/webhook`;
 
+const API_URL = process.env.API_URL!;
+
 // Без polling — обновления придут через webhook
-const bot = new SepBot(BOT_TOKEN, {
-  baseUrl: process.env.API_URL || 'http://localhost:3001/api'
-});
+const bot = new SepBot(BOT_TOKEN, API_URL);
 
 bot.on('message', async (msg) => {
   if (msg.text) {

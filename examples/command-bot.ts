@@ -7,10 +7,9 @@ import { SepBot, Message } from '../src';
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '1:your-token-here';
 
-const bot = new SepBot(BOT_TOKEN, {
-  baseUrl: process.env.API_URL || 'http://localhost:3001/api',
-  polling: { timeout: 30 }
-});
+const API_URL = process.env.API_URL!;
+
+const bot = new SepBot(BOT_TOKEN, API_URL, { polling: { timeout: 30 } });
 
 // ─── Command registry ───────────────────────────────────
 

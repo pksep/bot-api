@@ -15,8 +15,7 @@ bun add @pksep/bot-api
 ```typescript
 import { SepBot } from '@pksep/bot-api';
 
-const bot = new SepBot('1:abc123...', {
-  baseUrl: 'https://bot-api.example.com/api',
+const bot = new SepBot('1:abc123...', 'https://bot-api.example.com/api', {
   polling: true
 });
 
@@ -32,12 +31,16 @@ bot.on('message', async (msg) => {
 ### Constructor
 
 ```typescript
-new SepBot(token: string, options?: SepBotOptions)
+new SepBot(token: string, serverUrl: string, options?: SepBotOptions)
 ```
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `token` | `string` | Bot API token (`{botId}:{secret}`) |
+| `serverUrl` | `string` | Bot API server URL (e.g. `https://bot-api.example.com/api`) |
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `baseUrl` | `string` | `http://localhost:3001/api` | Bot API server URL |
 | `polling` | `boolean \| PollingOptions` | `false` | Enable auto polling |
 | `requestTimeout` | `number` | `30000` | HTTP timeout (ms) |
 
@@ -119,7 +122,9 @@ bot.stop();            // Stop everything + clear handlers
 ```typescript
 import { SepBot } from '@pksep/bot-api';
 
-const bot = new SepBot(process.env.BOT_TOKEN!, { polling: true });
+const bot = new SepBot(process.env.BOT_TOKEN!, process.env.API_URL!, {
+  polling: true
+});
 
 bot.on('message', async (msg) => {
   if (msg.text) {
@@ -133,7 +138,9 @@ bot.on('message', async (msg) => {
 ```typescript
 import { SepBot } from '@pksep/bot-api';
 
-const bot = new SepBot(process.env.BOT_TOKEN!, { polling: true });
+const bot = new SepBot(process.env.BOT_TOKEN!, process.env.API_URL!, {
+  polling: true
+});
 
 bot.on('message', async (msg) => {
   if (!msg.text) return;
@@ -156,7 +163,7 @@ bot.on('message', async (msg) => {
 import { SepBot, Update } from '@pksep/bot-api';
 import { createServer } from 'http';
 
-const bot = new SepBot(process.env.BOT_TOKEN!);
+const bot = new SepBot(process.env.BOT_TOKEN!, process.env.API_URL!);
 
 bot.on('message', async (msg) => {
   await bot.sendMessage(msg.chat.id, `Got: ${msg.text}`);

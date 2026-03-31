@@ -20,8 +20,6 @@ import {
   PollingError
 } from './types';
 
-const DEFAULT_BASE_URL = 'http://localhost:3001/api';
-
 /**
  * Sep Chat Bot API client.
  *
@@ -32,7 +30,9 @@ const DEFAULT_BASE_URL = 'http://localhost:3001/api';
  * ```typescript
  * import { SepBot } from '@pksep/bot-api';
  *
- * const bot = new SepBot('1:abc123...', { polling: true });
+ * const bot = new SepBot('1:abc123...', 'https://bot-api.example.com/api', {
+ *   polling: true
+ * });
  *
  * bot.on('message', async (msg) => {
  *   await bot.sendMessage(msg.chat.id, `Echo: ${msg.text}`);
@@ -44,14 +44,19 @@ export class SepBot {
   private polling: PollingManager | null = null;
   private readonly listeners: Map<string, Set<Function>> = new Map();
 
+  /**
+   * @param token — Bot API token (format: `{botId}:{secret}`)
+   * @param serverUrl — Bot API server URL (e.g. `https://bot-api.example.com/api`)
+   * @param options — optional configuration
+   */
   constructor(
     private readonly token: string,
+    serverUrl: string,
     private readonly options: SepBotOptions = {}
   ) {
-    const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
     const timeout = options.requestTimeout || 30_000;
 
-    this.api = new ApiClient(token, baseUrl, timeout);
+    this.api = new ApiClient(token, serverUrl, timeout);
 
     // Auto-start polling if requested
     if (options.polling) {

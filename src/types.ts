@@ -117,8 +117,6 @@ export interface GetChatParams {
 // ─── Bot Options ─────────────────────────────────────────
 
 export interface SepBotOptions {
-  /** Base URL сервера Bot API (default: http://localhost:3001/api) */
-  baseUrl?: string;
   /** Включить автоматический polling */
   polling?: boolean | PollingOptions;
   /** Timeout для HTTP-запросов в мс (default: 30000) */
