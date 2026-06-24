@@ -16,6 +16,16 @@ export interface Chat {
   title?: string;
 }
 
+/** Вложение сообщения (файл в объектном хранилище) */
+export interface MessageMedia {
+  /** objectName в хранилище */
+  path: string;
+  thumbnail_path?: string;
+  origin_name: string;
+  size: number;
+  type: 'IMAGE' | 'VIDEO' | 'FILE';
+}
+
 /** Сообщение */
 export interface Message {
   message_id: string;
@@ -24,6 +34,8 @@ export interface Message {
   date: number;
   text?: string;
   reply_to_message?: { message_id: string };
+  /** Вложения (если есть) */
+  media?: MessageMedia[];
 }
 
 /** Удалённое сообщение */
@@ -112,6 +124,35 @@ export interface SetWebhookParams {
 export interface GetChatParams {
   /** ID чата / топика */
   chat_id: string;
+}
+
+// ─── Files ───────────────────────────────────────────────
+
+/** Входной файл для sendDocument / sendPhoto */
+export interface InputFile {
+  /** Содержимое файла */
+  data: Uint8Array | ArrayBuffer | Blob;
+  /** Имя файла с расширением */
+  filename: string;
+  /** MIME-тип (image/png, application/pdf, ...) */
+  contentType?: string;
+}
+
+export interface SendDocumentParams {
+  /** Подпись к файлу */
+  caption?: string;
+  /** ID сообщения для ответа */
+  reply_to_message_id?: string;
+}
+
+/** Результат getUploadUrl — presigned-загрузка в хранилище */
+export interface UploadUrlResult {
+  /** file_id (objectName) — передаётся в sendDocument */
+  file_id: string;
+  /** presigned PUT URL для прямой загрузки файла */
+  upload_url: string;
+  /** публичная ссылка на скачивание */
+  public_url: string;
 }
 
 // ─── Bot Options ─────────────────────────────────────────

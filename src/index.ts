@@ -1,5 +1,6 @@
 export { SepBot } from './bot';
 export { ApiClient } from './api';
+export { parseWebhookUpdate } from './webhook';
 
 export type {
   // Core types
@@ -18,6 +19,12 @@ export type {
   SetWebhookParams,
   GetChatParams,
 
+  // Files
+  MessageMedia,
+  InputFile,
+  SendDocumentParams,
+  UploadUrlResult,
+
   // Options
   SepBotOptions,
   PollingOptions,
@@ -32,5 +39,7 @@ export type {
   // Response
   ApiResponse
 } from './types';
+
+export type { ParseWebhookOptions } from './webhook';
 
 export { SepBotError, ApiError, PollingError } from './types';

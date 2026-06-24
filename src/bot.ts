@@ -4,20 +4,19 @@ import {
   User,
   Chat,
   Message,
-  DeletedMessage,
   Update,
   WebhookInfo,
   SepBotOptions,
   PollingOptions,
   SendMessageParams,
   EditMessageTextParams,
-  DeleteMessageParams,
   GetUpdatesParams,
   SetWebhookParams,
-  GetChatParams,
+  InputFile,
+  SendDocumentParams,
+  UploadUrlResult,
   EventMap,
-  SepBotError,
-  PollingError
+  SepBotError
 } from './types';
 
 /**
@@ -50,9 +49,9 @@ export class SepBot {
    * @param options — optional configuration
    */
   constructor(
-    private readonly token: string,
+    token: string,
     serverUrl: string,
-    private readonly options: SepBotOptions = {}
+    options: SepBotOptions = {}
   ) {
     const timeout = options.requestTimeout || 30_000;
 
@@ -286,6 +285,98 @@ export class SepBot {
       chat_id: chatId,
       message_id: messageId
     });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  Files
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Get a presigned URL for direct upload to object storage.
+   * Usually not needed directly — use {@link sendDocument} / {@link sendPhoto}.
+   */
+  async getUploadUrl(
+    fileName: string,
+    mimeType?: string
+  ): Promise<UploadUrlResult> {
+    return this.api.call<UploadUrlResult>('getUploadUrl', {
+      file_name: fileName,
+      mime_type: mimeType
+    });
+  }
+
+  /**
+   * Send a file as a document. The file is streamed DIRECTLY to object
+   * storage (presigned PUT), bypassing the gateway and the message bus —
+   * so it scales to large files.
+   *
+   * @example
+   * ```typescript
+   * import { readFileSync } from 'fs';
+   * await bot.sendDocument('topic-uuid', {
+   *   data: readFileSync('report.pdf'),
+   *   filename: 'report.pdf',
+   *   contentType: 'application/pdf'
+   * }, { caption: 'Отчёт за месяц' });
+   * ```
+   */
+  async sendDocument(
+    chatId: string,
+    file: InputFile,
+    options?: SendDocumentParams
+  ): Promise<Message> {
+    return this.uploadAndSend('sendDocument', chatId, file, options);
+  }
+
+  /** Send an image. Same flow as {@link sendDocument} but typed as IMAGE. */
+  async sendPhoto(
+    chatId: string,
+    file: InputFile,
+    options?: SendDocumentParams
+  ): Promise<Message> {
+    return this.uploadAndSend('sendPhoto', chatId, file, options);
+  }
+
+  private async uploadAndSend(
+    method: 'sendDocument' | 'sendPhoto',
+    chatId: string,
+    file: InputFile,
+    options?: SendDocumentParams
+  ): Promise<Message> {
+    const { file_id, upload_url } = await this.getUploadUrl(
+      file.filename,
+      file.contentType
+    );
+
+    const body =
+      file.data instanceof ArrayBuffer ? new Uint8Array(file.data) : file.data;
+
+    const res = await fetch(upload_url, {
+      method: 'PUT',
+      headers: file.contentType
+        ? { 'Content-Type': file.contentType }
+        : undefined,
+      body: body as any
+    });
+    if (!res.ok) {
+      throw new SepBotError(`File upload failed: HTTP ${res.status}`);
+    }
+
+    return this.api.call<Message>(method, {
+      chat_id: chatId,
+      file_id,
+      file_name: file.filename,
+      file_size: this.byteLength(file.data),
+      mime_type: file.contentType,
+      caption: options?.caption,
+      reply_to_message_id: options?.reply_to_message_id
+    });
+  }
+
+  private byteLength(data: Uint8Array | ArrayBuffer | Blob): number {
+    if (data instanceof Uint8Array) return data.byteLength;
+    if (data instanceof ArrayBuffer) return data.byteLength;
+    return (data as Blob).size;
   }
 
   // ═══════════════════════════════════════════════════════════
