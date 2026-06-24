@@ -17,7 +17,7 @@
     "prepublishOnly": "bun run build"
   },
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "keywords": [
     "sep-chat",
